@@ -7,10 +7,9 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserDaoJDBCImpl extends Util implements UserDao {
-    Connection connection = Util.getConnection();
+public class UserDaoJDBCImpl implements UserDao {
 
-    public UserDaoJDBCImpl() throws SQLException {
+    public UserDaoJDBCImpl() {
     }
 
     public void createUsersTable() {
@@ -21,7 +20,8 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
                 "    age TINYINT\n" +
                 ");\n";
 
-        try (Statement statement = connection.createStatement()) {
+        try (Connection connection = Util.getConnection();
+             Statement statement = connection.createStatement()) {
             statement.execute(sql);
         } catch (SQLException e) {
             System.out.println("SQLException: " + e.getMessage());
@@ -30,7 +30,8 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
 
     public void dropUsersTable() {
         String sql = "DROP TABLE IF EXISTS Users";
-        try (Statement statement = connection.createStatement()) {
+        try (Connection connection = Util.getConnection();
+             Statement statement = connection.createStatement()) {
             statement.execute(sql);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -40,7 +41,8 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
 
     public void saveUser(String name, String lastName, byte age) {
         String sql = "INSERT INTO Users (name, lastname, age) VALUES (?, ?, ?)";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = Util.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, name);
             statement.setString(2, lastName);
             statement.setByte(3, age);
@@ -52,7 +54,8 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
 
     public void removeUserById(long id) {
         String sql = "DELETE FROM Users WHERE id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = Util.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -63,9 +66,8 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
     public List<User> getAllUsers() {
         List<User> usersList = new ArrayList<>();
         String sql = "SELECT * FROM Users";
-        Statement statement = null;
-        try {
-            statement = connection.createStatement();
+        try (Connection connection = Util.getConnection();
+             Statement statement = connection.createStatement()) {
             ResultSet rs = statement.executeQuery(sql);
             while (rs.next()) {
                 User user = new User();
@@ -77,12 +79,6 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
-        } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
         System.out.println(usersList);
         return usersList;
@@ -90,19 +86,11 @@ public class UserDaoJDBCImpl extends Util implements UserDao {
 
     public void cleanUsersTable() {
         String sql = "TRUNCATE TABLE Users";
-        Statement statement = null;
-        try {
-            statement = connection.createStatement();
+        try (Connection connection = Util.getConnection();
+             Statement statement = connection.createStatement()) {
             statement.execute(sql);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
-        } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                e.getMessage();
-            }
-
         }
     }
 }
